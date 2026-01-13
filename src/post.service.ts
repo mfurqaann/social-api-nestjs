@@ -20,7 +20,7 @@ export class PostService {
     cursor?: Prisma.PostWhereUniqueInput;
     where?: Prisma.PostWhereInput;
     orderBy?: Prisma.PostOrderByWithRelationInput;
-  }): Promise<Post[]> {
+  }): Promise<Pick<Post, 'id' | 'title' | 'content' | 'published'>[]> {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.post.findMany({
       skip,
@@ -28,6 +28,12 @@ export class PostService {
       cursor,
       where,
       orderBy,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+      }
     });
   }
 

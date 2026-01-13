@@ -6,11 +6,15 @@ import {
   Body,
   Put,
   Delete,
+  Req,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service.js';
 import { PostService } from './post.service.js';
 import { User as UserModel } from './generated/prisma/client.js';
 import { Post as PostModel } from './generated/prisma/client.js';
+import { JwtAuthGuard } from './auth/jwt-auth.guard.js';
 
 @Controller()
 export class AppController {
@@ -23,9 +27,9 @@ export class AppController {
   async getPostById(@Param('id') id: string): Promise<PostModel | null> {
     return this.postService.post({ id: Number(id) });
   }
-
+  
   @Get('feed')
-  async getPublishedPosts(): Promise<PostModel[]> {
+  async getPublishedPosts(): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
     return this.postService.posts({
       where: { published: true },
     });
@@ -34,7 +38,7 @@ export class AppController {
   @Get('filtered-posts/:searchString')
   async getFilteredPosts(
     @Param('searchString') searchString: string,
-  ): Promise<PostModel[]> {
+  ): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
     return this.postService.posts({
       where: {
         OR: [
@@ -49,11 +53,14 @@ export class AppController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('post')
   async createDraft(
-    @Body() postData: { title: string; content?: string; authorEmail: string },
+    @Body() postData: { title: string; content?: string },
+    @Req() req
   ): Promise<PostModel> {
-    const { title, content, authorEmail } = postData;
+    const authorEmail = req.user?.email;
+    const { title, content} = postData;
     return this.postService.createPost({
       title,
       content,
@@ -61,13 +68,6 @@ export class AppController {
         connect: { email: authorEmail },
       },
     });
-  }
-
-  @Post('user')
-  async signupUser(
-    @Body() userData: { name?: string; email: string; password: string },
-  ): Promise<UserModel> {
-    return this.UserService.createUser(userData);
   }
 
   @Put('publish/:id')
@@ -81,5 +81,14 @@ export class AppController {
   @Delete('post/:id')
   async deletePost(@Param('id') id: string): Promise<PostModel> {
     return this.postService.deletePost({ id: Number(id) });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('post')
+  async getAllPosts(@Request() req): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
+    const {id} = req.user
+    return this.postService.posts({
+      where: { authorId: Number(id) },
+    });
   }
 }
