@@ -9,6 +9,7 @@ import { LoginAuthDto } from './dto/login-auth.dto';
 @Injectable()
 export class AuthService {
   constructor(private prismaService: PrismaService, private jwtService: JwtService) {}
+
   async register(createAuthDto: CreateAuthDto) {
     const {email, name, password} = createAuthDto;
 
@@ -37,9 +38,7 @@ export class AuthService {
       }
     })
 
-    const token = this.jwtService.sign({id: user.id, email: user.email});
-    console.log('Generated Token:', token);
-    return {user, token};
+    return {user};
 
    }
 
