@@ -16,6 +16,8 @@ import { PostService } from './post.service';
 import { Post as PostModel } from '../generated/prisma/client.js';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import type { JwtUser } from 'src/interfaces/jwt-user.interface';
 
 @Controller('post')
 export class PostController {
@@ -31,8 +33,11 @@ export class PostController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getPostById(@Param('id') id: number, @Request() req): Promise<PostModel | null> {
-    const userId = req.user?.id;
+  getPostById(
+    @Param('id') id: number,
+    @CurrentUser() user: JwtUser,
+  ): Promise<PostModel | null> {
+    const userId = user?.id;
     return this.postService.post(Number(id), userId);
   }
 
@@ -41,57 +46,47 @@ export class PostController {
   getFilteredPosts(
     @Param('searchString') searchString: string,
   ): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
-    return this.postService.posts({
-      where: {
-        OR: [
-          {
-            title: { contains: searchString },
-          },
-          {
-            content: { contains: searchString },
-          },
-        ],
-      },
-    });
+    return this.postService.getFilteredPost(searchString);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post()
   createDraft(
     @Body() createPostDto: CreatePostDto,
-    @Req() req,
+    @CurrentUser() user: JwtUser,
   ): Promise<PostModel> {
-    const authorEmail = req.user?.email;
+    const authorEmail = user?.email;
     return this.postService.createPost(createPostDto, authorEmail);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('publish/:id')
-  publishPost(@Param('id') id: string, @Request() req): Promise<PostModel> {
-    const userId = req.user?.id;
-    return this.postService.updatePost({
-      where: { id: Number(id) },
-      data: { published: true },
-      userId: Number(userId),
-    });
+  publishPost(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ): Promise<PostModel> {
+    const userId = user?.id;
+    return this.postService.updatePost(Number(id), true, Number(userId))
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('unpublish/:id')
-  unPublishPost(@Param('id') id: string, @Request() req): Promise<PostModel> {
-    const userId = req.user?.id;
-    return this.postService.updatePost({
-      where: { id: Number(id) },
-      data: { published: false },
-      userId: Number(userId),
-    });
+  unPublishPost(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ): Promise<PostModel> {
+    const userId = user?.id;
+    return this.postService.updatePost(Number(id), false, Number(userId));
   }
 
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deletePost(@Param('id') id: string, @Request() req): Promise<PostModel> {
-    const userId = req.user?.id;
+  deletePost(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ): Promise<PostModel> {
+    const userId = user?.id;
     return this.postService.deletePost({
       id: Number(id),
       authorId: Number(userId),
@@ -101,11 +96,12 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getAllPosts(
-    @Request() req,
+    @CurrentUser() user: JwtUser,
   ): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
-    const userId = req.user?.id;
+    const userId = user?.id;
+    const where = { authorId: Number(userId) };
     return this.postService.posts({
-      where: { authorId: Number(userId) },
+      where,
     });
   }
 }

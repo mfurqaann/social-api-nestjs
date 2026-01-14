@@ -57,14 +57,9 @@ export class PostService {
     });
   }
 
-  async updatePost(params: {
-    where: Prisma.PostWhereUniqueInput;
-    data: Prisma.PostUpdateInput;
-    userId?: number;
-  }): Promise<Post> {
-     const { data, where, userId } = params;
+  async updatePost(id: number, published: boolean, userId: number): Promise<Post> {
     const post = await this.prisma.post.findUnique({
-      where
+      where: { id }
     })
     if (!post) throw new NotFoundException('Post not found');
 
@@ -73,8 +68,8 @@ export class PostService {
     }
 
     return this.prisma.post.update({
-      data,
-      where,
+      where: { id },
+      data: { published }
     });
   }
 
@@ -98,6 +93,27 @@ export class PostService {
   getPublishedPost(): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
     return this.prisma.post.findMany({
       where: { published: true },
+    })
+  }
+
+  getFilteredPost(searchString: string): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
+    return this.prisma.post.findMany({
+      where: {
+        OR: [
+          {
+            title: { contains: searchString, mode: 'insensitive'},
+          },
+          {
+            content: { contains: searchString, mode: 'insensitive'},
+          },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        published: true,
+      }
     })
   }
 }
