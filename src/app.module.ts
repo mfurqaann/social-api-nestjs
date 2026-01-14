@@ -7,11 +7,12 @@ import { UserService } from './user.service.js';
 import { PostService } from './post.service.js';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { PostModule } from './post/post.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), AuthModule],
+  imports: [ConfigModule.forRoot(), AuthModule, PostModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService, UserService, PostService],
+  providers: [AppService],
 })
 export class AppModule {
 }
