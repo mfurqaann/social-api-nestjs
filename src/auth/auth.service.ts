@@ -38,7 +38,7 @@ export class AuthService {
       }
     })
 
-    return {user};
+    return {...user};
 
    }
 
@@ -66,6 +66,6 @@ export class AuthService {
       name: user.name,
       createdAt: user.createdAt
     }
-    return {user: safeUser, token};
+    return {...safeUser, token};
    }
 }

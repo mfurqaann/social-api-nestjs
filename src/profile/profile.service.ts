@@ -1,27 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
+import { ProfileResponseDto } from './dto/response-profile.dto';
 
 @Injectable()
 export class ProfileService {
 
   constructor(private prismaService: PrismaService) {}
 
-  async findByUserId(id: number) {
-    const findUser = await this.prismaService.profile.findUnique({
+  async findByUserId(userId: number): Promise<ProfileResponseDto> {
+    const findUser = await this.prismaService.user.findUnique({
       where: {
-        userId: id
+        id: userId
       },
       include: {
-        user: true
+        profile: true
       }
     })
 
     if (!findUser) {
-      throw new NotFoundException('User is not found')
+      throw new UnauthorizedException()
     }
-    return findUser;
+    
+    return {
+    id: findUser.profile?.id ?? null,
+    bio: findUser.profile?.bio ?? null,
+    photo: findUser.profile?.photo ?? null,
+    gender: findUser.profile?.gender ?? null,
+      user: {
+        id: findUser.id,
+        email: findUser.email,
+        name: findUser.name,
+      },
+  };
   }
 
   create(createProfileDto: CreateProfileDto, userId: number) {

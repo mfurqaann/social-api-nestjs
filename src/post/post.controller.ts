@@ -17,7 +17,7 @@ import { Post as PostModel } from '../generated/prisma/client.js';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import type { JwtUser } from 'src/interfaces/jwt-user.interface';
+import type { JwtUser } from 'src/common/interfaces/jwt-user.interface';
 
 @Controller('post')
 export class PostController {

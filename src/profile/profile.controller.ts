@@ -3,8 +3,9 @@ import { ProfileService } from './profile.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import type { JwtUser } from 'src/interfaces/jwt-user.interface';
+import type { JwtUser } from 'src/common/interfaces/jwt-user.interface';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { ProfileResponseDto } from './dto/response-profile.dto';
 
 @Controller('profile')
 export class ProfileController {
@@ -13,7 +14,7 @@ export class ProfileController {
   
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMyProfile(@CurrentUser() user: JwtUser) {
+  getMyProfile(@CurrentUser() user: JwtUser): Promise<ProfileResponseDto> {
     const id = user.id
     return this.profileService.findByUserId(Number(id));
   }
