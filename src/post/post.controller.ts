@@ -15,9 +15,14 @@ import {
 import { PostService } from './post.service';
 import { Post as PostModel } from '../generated/prisma/client.js';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { CreatePostDto } from './dto/create-post.dto';
+import { CreatePostDto } from './dto/request/create-post.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import type { JwtUser } from 'src/common/interfaces/jwt-user.interface';
+import { FeedResponseDto } from './dto/response/feed-response.dto';
+import { GetPostsResponseDto } from './dto/response/get-posts-response.dto';
+import { CreatePostResponseDto } from './dto/response/create-post-response.dto';
+import { UpdatePostResponseDto } from './dto/response/update-post-response.dto';
+import { GetFilterPostResponseDto } from './dto/response/get-filter-post-response.dto';
 
 @Controller('post')
 export class PostController {
@@ -26,7 +31,7 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @Get('feed')
   getPublishedPosts(): Promise<
-    Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]
+    FeedResponseDto[]
   > {
     return this.postService.getPublishedPost();
   }
@@ -36,7 +41,7 @@ export class PostController {
   getPostById(
     @Param('id') id: number,
     @CurrentUser() user: JwtUser,
-  ): Promise<PostModel | null> {
+  ): Promise<GetPostsResponseDto> {
     const userId = user?.id;
     return this.postService.post(Number(id), userId);
   }
@@ -45,7 +50,7 @@ export class PostController {
   @Get('filtered-posts/:searchString')
   getFilteredPosts(
     @Param('searchString') searchString: string,
-  ): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
+  ): Promise<GetFilterPostResponseDto[]> {
     return this.postService.getFilteredPost(searchString);
   }
 
@@ -54,7 +59,7 @@ export class PostController {
   createDraft(
     @Body() createPostDto: CreatePostDto,
     @CurrentUser() user: JwtUser,
-  ): Promise<PostModel> {
+  ): Promise<CreatePostResponseDto> {
     const authorEmail = user?.email;
     return this.postService.createPost(createPostDto, authorEmail);
   }
@@ -64,7 +69,7 @@ export class PostController {
   publishPost(
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
-  ): Promise<PostModel> {
+  ): Promise<UpdatePostResponseDto> {
     const userId = user?.id;
     return this.postService.updatePost(Number(id), true, Number(userId))
   }
@@ -74,7 +79,7 @@ export class PostController {
   unPublishPost(
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
-  ): Promise<PostModel> {
+  ): Promise<UpdatePostResponseDto> {
     const userId = user?.id;
     return this.postService.updatePost(Number(id), false, Number(userId));
   }
@@ -82,10 +87,10 @@ export class PostController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  deletePost(
+  async deletePost(
     @Param('id') id: string,
     @CurrentUser() user: JwtUser,
-  ): Promise<PostModel> {
+  ): Promise<void> {
     const userId = user?.id;
     return this.postService.deletePost({
       id: Number(id),
@@ -97,7 +102,7 @@ export class PostController {
   @Get()
   getAllPosts(
     @CurrentUser() user: JwtUser,
-  ): Promise<Pick<PostModel, 'id' | 'title' | 'content' | 'published'>[]> {
+  ): Promise<GetPostsResponseDto[]> {
     const userId = user?.id;
     const where = { authorId: Number(userId) };
     return this.postService.posts({
