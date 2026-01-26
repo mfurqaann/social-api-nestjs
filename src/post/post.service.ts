@@ -102,7 +102,7 @@ export class PostService {
       throw new ForbiddenException('You are not allowed to delete this post');
     }
 
-    this.prisma.post.delete({
+    await this.prisma.post.delete({
       where: {id}
     });
   }

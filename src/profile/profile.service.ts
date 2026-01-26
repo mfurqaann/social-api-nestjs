@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CreateProfileDto } from './dto/create-profile.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { CreateProfileDto } from './dto/request/create-profile.dto';
 import { PrismaService } from 'src/prisma.service';
-import { ProfileResponseDto } from './dto/response-profile.dto';
+import { ProfileResponseDto } from './dto/response/response-profile.dto';
+import { CreateProfileResponseDto } from './dto/response/create-profile-response.dto';
 
 @Injectable()
 export class ProfileService {
@@ -36,9 +36,13 @@ export class ProfileService {
   };
   }
 
-  create(createProfileDto: CreateProfileDto, userId: number) {
+  create(createProfileDto: CreateProfileDto, userId: number): Promise<CreateProfileResponseDto> {
     return this.prismaService.profile.create({
       data: { ...createProfileDto, userId },
+      omit: {
+        createdAt: true,
+        updatedAt: true
+      }
     });
   }
 }

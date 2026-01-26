@@ -23,13 +23,21 @@ import { GetPostsResponseDto } from './dto/response/get-posts-response.dto';
 import { CreatePostResponseDto } from './dto/response/create-post-response.dto';
 import { UpdatePostResponseDto } from './dto/response/update-post-response.dto';
 import { GetFilterPostResponseDto } from './dto/response/get-filter-post-response.dto';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Post')
+@ApiBearerAuth()
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('feed')
+  @ApiOkResponse({
+    description: 'Get user Feed',
+    type: FeedResponseDto,
+    isArray: true
+  })
   getPublishedPosts(): Promise<
     FeedResponseDto[]
   > {

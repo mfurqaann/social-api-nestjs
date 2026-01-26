@@ -1,12 +1,11 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CreateAuthDto } from './dto/request/create-auth.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { LoginAuthDto } from './dto/login-auth.dto';
-import { RegisterResponseDto } from './dto/register-response.dto';
-import { LoginResponseDto } from './dto/login-response.dto';
+import { LoginAuthDto } from './dto/request/login-auth.dto';
+import { RegisterResponseDto } from './dto/response/register-response.dto';
+import { LoginResponseDto } from './dto/response/login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -66,7 +65,6 @@ export class AuthService {
       id: user.id,
       email: user.email,
       name: user.name,
-      createdAt: user.createdAt
     }
     return {...safeUser, token};
    }

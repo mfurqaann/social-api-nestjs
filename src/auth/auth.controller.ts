@@ -1,11 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-import { LoginAuthDto } from './dto/login-auth.dto';
-import { RegisterResponseDto } from './dto/register-response.dto';
-import { LoginResponseDto } from './dto/login-response.dto';
+import { CreateAuthDto } from './dto/request/create-auth.dto';
+import { LoginAuthDto } from './dto/request/login-auth.dto';
+import { RegisterResponseDto } from './dto/response/register-response.dto';
+import { LoginResponseDto } from './dto/response/login-response.dto';
+import { ApiOkResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Login')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -16,6 +17,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @ApiOkResponse({
+    description: 'User login',
+    type: LoginResponseDto
+  })
   login(@Body() loginAuthDto: LoginAuthDto): Promise<LoginResponseDto> {
     return this.authService.login(loginAuthDto);
   }
