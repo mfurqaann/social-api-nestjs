@@ -3,9 +3,17 @@ import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.enableCors({
+    origin: ['http://localhost:3000'],
+    credentials: true
+  });
+
+  app.use(cookieParser());
 
   const config = new DocumentBuilder()
     .setTitle('My API')
@@ -17,12 +25,13 @@ async function bootstrap() {
 
   SwaggerModule.setup('api', app, documentFactory);
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
-
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   app.useGlobalInterceptors(new ResponseInterceptor());
   
 

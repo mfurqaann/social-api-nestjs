@@ -43,7 +43,7 @@ export class AuthService {
 
    }
 
-   async login (loginAuthDto: LoginAuthDto): Promise<LoginResponseDto> {
+   async login (loginAuthDto: LoginAuthDto, res): Promise<LoginResponseDto> {
     const {email, password} = loginAuthDto;
 
     const user = await this.prismaService.user.findUnique({
@@ -66,6 +66,13 @@ export class AuthService {
       email: user.email,
       name: user.name,
     }
-    return {...safeUser, token};
+
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+    })
+
+    return {...safeUser};
    }
 }

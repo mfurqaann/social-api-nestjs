@@ -9,7 +9,4 @@ export class LoginResponseDto {
 
     @ApiProperty({example: 'Furqan'})
     name: string | null;
-
-    @ApiProperty({example: 'token123'})
-    token: string;
 }
