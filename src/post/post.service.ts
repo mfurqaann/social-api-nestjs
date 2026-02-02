@@ -107,16 +107,31 @@ export class PostService {
     });
   }
 
-  async getPublishedPost(): Promise<FeedResponseDto[]> {
-    const feed = await this.prisma.post.findMany({
-      where: { published: true },
-      omit: {
+  async getPublishedPost() {
+    const feeds = await this.prisma.post.findMany({
+      select: {
+        id: true,
+        title: true,
+        content: true,
         createdAt: true,
-        updatedAt: true
+        author: {
+          select: {
+            name: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     })
 
-    return feed
+    return feeds.map((feed) => ({
+      id: feed.id,
+      title: feed.title,
+      content: feed.content,
+      createdAt: feed.createdAt,
+      username: feed.author?.name
+    }))
   }
 
   getFilteredPost(searchString: string): Promise<GetFilterPostResponseDto[]> {

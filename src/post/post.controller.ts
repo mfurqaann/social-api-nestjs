@@ -38,9 +38,8 @@ export class PostController {
     type: FeedResponseDto,
     isArray: true
   })
-  getPublishedPosts(): Promise<
-    FeedResponseDto[]
-  > {
+  getPublishedPosts()
+   {
     return this.postService.getPublishedPost();
   }
 

@@ -71,8 +71,18 @@ export class AuthService {
       httpOnly: true,
       sameSite: 'lax',
       secure: false,
+      path: '/'
     })
 
     return {...safeUser};
+   }
+
+   logout(res) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,  
+   })
+    return null
    }
 }
